@@ -5,6 +5,8 @@
 #define LEDPUN 12
 #define LEDVIH 13
 
+//esimerkki muokkaus
+
 //Selvyyden vuoksi ledin sytyttämiselle/sammuttamiselle omat nimitykset
 #define LEDON HIGH
 #define LEDOFF LOW

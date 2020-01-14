@@ -2,10 +2,9 @@
 #define ANTURI A0
 #define POTENTIO A1
 #define FAN 11
-#define LEDPUN 12
+#define LEDSIN 12
 #define LEDVIH 13
-
-//Selkeyden vuoksi ledin sytyttämiselle/sammuttamiselle omat nimitykset
+//Selkeyden vuoksi ledin sytyttämiselle/sammuttamiselle omat määritykset
 #define LEDON HIGH
 #define LEDOFF LOW
 
@@ -13,27 +12,39 @@
 int LUKEMA;
 int ASETUS;
 int OHJAUS;
-
-//Halutut toiminnot löytyy ohjelmasta mutta vaatii säätämistä
+int SUMMA;
+int TAULU[5];     //Muuttuja keskiarvoistamista varten.
+int INDEX = 0;
 
 //Funktiot
 void setup(){
   //Funktiokutsut
-  pinMode(LEDPUN, OUTPUT);      
+  pinMode(LEDSIN, OUTPUT);
   pinMode(LEDVIH, OUTPUT);
   pinMode(FAN, OUTPUT);
   analogWrite(FAN, 0);    //Varmistetaan että tuuletin on "nolla" tilassa käynnistettäessä, eli ei lähde pyörimään
-  Serial.begin(9600);     
+  Serial.begin(9600);
+  for(int i = 0; i<5; i++){           //for silmukassa "i" muuttujaan tallennetaan i:n arvoksi 0, ja niin kauan kun i:n arvo on alle 5, lisätään lukemaan joka kierrolla +1.
+   TAULU[i] =  analogRead(ANTURI);    //Lukee anturin arvon, keskiarvoistaa lukeman ja tallentaa TAULU muuttujaan. Tehdään siksi ettei puhallin lähde heti alkuun pyörimään.
+  }
 }
 
 void loop() {
-  LUKEMA = analogRead(ANTURI);              //Luetaan lämpötila anturista
-  float ASTE = (-9.00/70.00)*LUKEMA+91;     //float on vastaava kuin int, mutta se antaa käyttää desimaalilukuja
+  TAULU[INDEX++] = analogRead(ANTURI);              //Luetaan "lämpötila" anturista, ja tehdään mittauksista...
+  if(INDEX == 5){
+    INDEX = 0;
+  }
+  int SUMMA=0;
+  for(int i = 0; i<5; i++){
+    SUMMA = SUMMA+TAULU[i];
+  }
+  LUKEMA = SUMMA/5;                                  //...keskiarvoistus
+  float ASTE = (-9.00/70.00)*LUKEMA+91;     //float on vastaava kuin int, mutta se antaa käyttää desimaalilukuja. Lukemien muuntamisessa on käytetty suoran yhtälöä.
   Serial.print("Mitattu lämpötila: ");      //Sarjaporttiin tulostus seuraavat 3 riviä
   Serial.print(ASTE);
   Serial.println(" astetta");
   ASETUS = analogRead(POTENTIO);            //Lukee potentoimetrin "asennon" tai vastusarvon
-  ASETUS = map(ASETUS, 0, 1023, 160, 300);    //Muuntaa potentiometrin äärilukemat 160 ja 300 arvoisiksi (0 = 160 ja 1023 = 300)
+  ASETUS = map(ASETUS, 0, 1023, 160, 300);    //Muuntaa potentiometrin äärilukemat 0 ja 1023, 160 ja 300 arvoisiksi (0 = 160 ja 1023 = 300)
   Serial.print("Raja-arvo: ");
   Serial.print(ASETUS);
   Serial.println(" astetta");
@@ -49,10 +60,8 @@ void loop() {
   }
   if(ASTE > ASETUS){
     digitalWrite(LEDVIH, LEDOFF);
-    digitalWrite(LEDPUN, LEDON);
-    //analogWrite(FAN, OHJAUS);
-  }else if(ASTE < ASETUS - 3){
-    digitalWrite(LEDPUN, LEDOFF);
-    //analogWrite(FAN, 0);
+    digitalWrite(LEDSIN, LEDON);
+  }else if(ASTE < ASETUS){
+    digitalWrite(LEDSIN, LEDOFF);
   }
  }

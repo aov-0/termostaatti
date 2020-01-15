@@ -17,7 +17,6 @@ int INDEX = 0;    //Alustetaan arvoltaan 0:ksi.
 
 //Funktiot
 void setup(){
-  //Funktiokutsut
   pinMode(LEDSIN, OUTPUT);
   pinMode(LEDVIH, OUTPUT);
   pinMode(FAN, OUTPUT);
@@ -30,21 +29,25 @@ void setup(){
   }
 }
 
-void loop() {
-  TAULU[INDEX++] = analogRead(ANTURI);              //Luetaan anturin arvo. INDEX pitää kirjaa mittauksien lukumäärästä.
-  if(INDEX == 5){                                 //Jos luettuja arvoja on 5,
-    INDEX = 0;                                    //palataan takaisin 0:aan.
+void keskiarvo(){                             //Keskiarvoistukselle oma funtio
+   TAULU[INDEX++] = analogRead(ANTURI);       //Luetaan anturin arvo. INDEX pitää kirjaa mittauksien lukumäärästä.
+  if(INDEX == 5){                            //Jos luettuja arvoja on 5,
+    INDEX = 0;                              //palataan takaisin 0:aan.
   }
   int SUMMA = 0;                     //Alustaa SUMMA:n aloitusarvoksi 0
   for(int i = 0; i<5; i++){        //Niin kauan kunnes on luettu 5 näytettä
     SUMMA = SUMMA+TAULU[i];
   }
-  LUKEMA = SUMMA/5;                                  //Laskee keskiarvon edellisessä luetuista lukemista
+  LUKEMA = SUMMA/5;               //Laskee keskiarvon edellisessä luetuista lukemista
+}
+
+void loop() {
+  keskiarvo();                                //Funktiokutsu keskiarvoistamiselle
   float ASTE = (-5.30/34.00)*LUKEMA+105.9;    //float on vastaava kuin int, mutta se antaa käyttää desimaalilukuja. Lukemien muuntamisessa on käytetty suoran yhtälöä.
   Serial.print("Mitattu lämpötila: ");      //Sarjaporttiin tulostus seuraavat 3 riviä
   Serial.print(ASTE);
   Serial.println(" astetta");
-  ASETUS = analogRead(POTENTIO);                //Lukee potentiometrin "asennon" tai vastusarvon
+  ASETUS = analogRead(POTENTIO);                //Lukee potentoimetrin "asennon" tai vastusarvon
   ASETUS = map(ASETUS, 0, 1023, 1600, 3000);    //Muuntaa potentiometrin äärilukemat 0 ja 1023, 1600 ja 3000 arvoisiksi (0 = 1600 ja 1023 = 3000). Näin tehtiin koska haluttiin potentiometrin säädölle enemmän "askellusta", jolloin säätämisen tarkkuus parani. Tässä haetaan 16 asteen minimiarvoa ja 30 asteen maksimiarvoa.
   Serial.print("Raja-arvo: ");
   Serial.print(ASETUS/100.0);               //ASETUS arvo jaetaan sadalla koska se aiemmin mäpättiin sata kertaiseksi lisätarkkuuden saavuttamiseksi. Lisättäessä piste luvun perään, saadaan sarjaporttiin desimaalilukuja.
@@ -61,8 +64,8 @@ void loop() {
   if(ASTE > ASETUS){                //Jos mitattu arvo on enemmän kuin asetettu arvo,
     digitalWrite(LEDVIH, LEDOFF);   //vihreä ledi sammutetaan,
     digitalWrite(LEDSIN, LEDON);    //ja sininen ledi sytytetään.
-  }else if(ASTE < ASETUS){          //Jos mitattu arvo on vähemmän kuin asetettu arvo,
+  }else if(ASTE < ASETUS){          //Jos mitattu arvo on vähemmän kuin asetettu,
     digitalWrite(LEDSIN, LEDOFF);   //sammutetaan sininen ledi
-    digitalWrite(LEDVIH, LEDON);    //Vihreä ledi palaa aina kun lämpötila on halutun arvoinen
+    digitalWrite(LEDVIH, LEDON);              //Vihreä ledi palaa aina kun lämpötila on halutun arvoinen; silloin kun on jäähdytetty tarpeeksi matalalle
   }
  }

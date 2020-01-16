@@ -48,24 +48,26 @@ void loop() {
   Serial.print(ASTE);
   Serial.println(" astetta");
   ASETUS = analogRead(POTENTIO);                //Lukee potentoimetrin "asennon" tai vastusarvon
-  ASETUS = map(ASETUS, 0, 1023, 1600, 3000);    //Muuntaa potentiometrin äärilukemat 0 ja 1023, 1600 ja 3000 arvoisiksi (0 = 1600 ja 1023 = 3000). Näin tehtiin koska haluttiin potentiometrin säädölle enemmän "askellusta", jolloin säätämisen tarkkuus parani. Tässä haetaan 16 asteen minimiarvoa ja 30 asteen maksimiarvoa.
+  ASETUS = map(ASETUS, 0, 1023, 16000, 30000);    //Muuntaa potentiometrin äärilukemat 0 ja 1023, 1600 ja 3000 arvoisiksi (0 = 1600 ja 1023 = 3000). Näin tehtiin koska haluttiin potentiometrin säädölle enemmän "askellusta", jolloin säätämisen tarkkuus parani. Tässä haetaan 16 asteen minimiarvoa ja 30 asteen maksimiarvoa.
   Serial.print("Raja-arvo: ");
-  Serial.print(ASETUS/100.0);               //ASETUS arvo jaetaan sadalla koska se aiemmin mäpättiin sata kertaiseksi lisätarkkuuden saavuttamiseksi. Lisättäessä piste luvun perään, saadaan sarjaporttiin desimaalilukuja.
+  Serial.print(ASETUS/1000.0);               //ASETUS arvo jaetaan sadalla koska se aiemmin mäpättiin sata kertaiseksi lisätarkkuuden saavuttamiseksi. Lisättäessä piste luvun perään, saadaan sarjaporttiin desimaalilukuja.
   Serial.println(" astetta");
   delay(1000);                                    //Viive jottei sarjaporttiin tulostuisi niin usein
-  ASTE*=100;                                      //Kertoo luetun lämpötilan 100 kertaisesti, koska haluttiin säätöön enemmän tarkkuutta.
-  OHJAUS = map(ASTE - ASETUS, 100, 700, 60, 255); //Jos mitatun arvon ja asetetun arvon erotus on vaikka 1 (tässä yhteydessä 100, koska luvut kerrottiin), mäppäytyy OHJAUS:ksen analogWrite arvo silloin 60, jolloin puhallin pyörii hiljaisimmalla mahdollisella nopeudella. 255 on suurin nopeus.
+  ASTE*=1000;                                      //Kertoo luetun lämpötilan 100 kertaisesti, koska haluttiin säätöön enemmän tarkkuutta.
+  OHJAUS = map(ASTE - ASETUS, 1000, 7000, 60, 255); //Jos mitatun arvon ja asetetun arvon erotus on vaikka 1 (tässä yhteydessä 100, koska luvut kerrottiin), mäppäytyy OHJAUS:ksen analogWrite arvo silloin 60, jolloin puhallin pyörii hiljaisimmalla mahdollisella nopeudella. 255 on suurin nopeus.
   Serial.println(OHJAUS);                         //Tulostaa arvon helpottaaksi kehitystyötä
-  if(OHJAUS>0){                                   //Jos ohjauksen arvo on enemmän kuin 0,
-    analogWrite(FAN, OHJAUS);                     //käynnistetään puhallin "OHJAUS" arvon mukaisella nopeudella
+  if(OHJAUS<0){                                   //Jos ohjauksen arvo on enemmän kuin 0,
+    analogWrite(FAN, 0);                     //käynnistetään puhallin "OHJAUS" arvon mukaisella nopeudella
+  }else if(OHJAUS > 255){
+    analogWrite(FAN, 255);
   }else{
-    analogWrite(FAN, 0);
+    analogWrite(FAN, OHJAUS);
   }
   if(ASTE > ASETUS){                //Jos mitattu arvo on enemmän kuin asetettu arvo,
     digitalWrite(LEDVIH, LEDOFF);   //vihreä ledi sammutetaan,
     digitalWrite(LEDSIN, LEDON);    //ja sininen ledi sytytetään.
   }else if(ASTE < ASETUS){          //Jos mitattu arvo on vähemmän kuin asetettu,
     digitalWrite(LEDSIN, LEDOFF);   //sammutetaan sininen ledi
-    digitalWrite(LEDVIH, LEDON);              //Vihreä ledi palaa aina kun lämpötila on halutun arvoinen; silloin kun on jäähdytetty tarpeeksi matalalle
+    digitalWrite(LEDVIH, LEDON);    //Vihreä ledi palaa aina kun lämpötila on halutun arvoinen; silloin kun on jäähdytetty tarpeeksi matalalle
   }
  }

@@ -7,13 +7,15 @@
 //Selkeyden vuoksi ledin sytyttämiselle/sammuttamiselle omat määritykset
 #define LEDON HIGH
 #define LEDOFF LOW
+//#define debug     //Kommenttina siksi että voi tarpeen mukaan hyödyntää. Jos käytössä, ei hyppää halutun rivin yli koodissa
 
 //Globaalit muuttujat
 int LUKEMA;
 int ASETUS;
 int OHJAUS;
-int TAULU[5];     //Muuttuja keskiarvoistamista varten. Varaa 5 tallennuspaikkaa tähän käyttöön.
-int INDEX = 0;    //Alustetaan arvoltaan 0:ksi.
+int TAULU[5];     //Muuttuja keskiarvoistamista varten. Varaa 5 tallennuspaikkaa tähän käyttöön
+int INDEX = 0;    //Alustetaan arvoltaan 0:ksi
+float ASTE;       //float on vastaava kuin int, mutta se antaa käyttää desimaalilukuja. 
 
 //Funktiot
 void setup(){
@@ -24,50 +26,65 @@ void setup(){
   digitalWrite(LEDSIN, LEDOFF);       //-..-
   analogWrite(FAN, 0);                //Varmistetaan että tuuletin on "nolla" tilassa käynnistettäessä, eli ei lähde pyörimään
   Serial.begin(9600);
-  for(int i = 0; i<5; i++){           //for silmukassa "i" muuttujaan tallennetaan i:n arvoksi 0, ja niin kauan kunnes i:n arvo on 5, lisätään lukemaan joka kierron jälkeen +1.
-   TAULU[i] =  analogRead(ANTURI);    //Lukee anturin arvon, tallentaa TAULU muuttujaan. Tässä tapahtuu keskiarvoistus. Tehdään tässä aluksi siksi ettei puhallin lähde heti alkuun pyörimään.
+  for(int i = 0; i<5; i++){           //for silmukassa "i" muuttujaan tallennetaan i:n arvoksi 0, ja niin kauan kunnes i:n arvo on 5, lisätään lukemaan joka kierron jälkeen +1
+   TAULU[i] =  analogRead(ANTURI);    //Lukee anturin arvon ja tallentaa TAULU muuttujaan. Tämä tehdään void setup:in siksi ettei puhallin lähde heti alkuun pyörimään
   }
 }
 
 void keskiarvo(){                             //Keskiarvoistukselle oma funtio
-   TAULU[INDEX++] = analogRead(ANTURI);       //Luetaan anturin arvo. INDEX pitää kirjaa mittauksien lukumäärästä.
-  if(INDEX == 5){                            //Jos luettuja arvoja on 5,
-    INDEX = 0;                              //palataan takaisin 0:aan.
+   TAULU[INDEX++] = analogRead(ANTURI);       //Luetaan anturin arvo. INDEX pitää kirjaa mittauksien lukumäärästä
+  if(INDEX == 5){                             //Jos luettuja arvoja on 5,
+    INDEX = 0;                                //palataan laskuissa takaisin 0:aan
   }
-  int SUMMA = 0;                     //Alustaa SUMMA:n aloitusarvoksi 0
-  for(int i = 0; i<5; i++){        //Niin kauan kunnes on luettu 5 näytettä
-    SUMMA = SUMMA+TAULU[i];
+  int SUMMA = 0;                          //Alustaa SUMMA:n aloitusarvoksi 0
+  for(int i = 0; i<5; i++){               //Niin kauan kunnes on luettu 5 näytettä,
+    SUMMA = SUMMA+TAULU[i];               //tallentuu aiemmin luettu arvo SUMMA yhteenlaskuun
   }
-  LUKEMA = SUMMA/5;               //Laskee keskiarvon edellisessä luetuista lukemista
+  LUKEMA = SUMMA/5;                       //Jakaa luetut 5 arvoa luvulla 5, ja tallettaa sen LUKEMA nimiseksi
 }
 
-void loop() {
-  keskiarvo();                                //Funktiokutsu keskiarvoistamiselle
-  float ASTE = (-5.30/34.00)*LUKEMA+105.9;    //float on vastaava kuin int, mutta se antaa käyttää desimaalilukuja. Lukemien muuntamisessa on käytetty suoran yhtälöä.
-  Serial.print("Mitattu lämpötila: ");      //Sarjaporttiin tulostus seuraavat 3 riviä
-  Serial.print(ASTE);
-  Serial.println(" astetta");
-  ASETUS = analogRead(POTENTIO);                //Lukee potentoimetrin "asennon" tai vastusarvon
-  ASETUS = map(ASETUS, 0, 1023, 16000, 30000);    //Muuntaa potentiometrin äärilukemat 0 ja 1023, 1600 ja 3000 arvoisiksi (0 = 1600 ja 1023 = 3000). Näin tehtiin koska haluttiin potentiometrin säädölle enemmän "askellusta", jolloin säätämisen tarkkuus parani. Tässä haetaan 16 asteen minimiarvoa ja 30 asteen maksimiarvoa.
+void mittaus(){
+  ASTE = (-5.30/34.00)*LUKEMA+105.9;        //Lukemien muuntamisessa on käytetty suoran yhtälöä
+  Serial.print("Mitattu lämpötila: ");        //Sarjaporttiin tulostus
+  Serial.print(ASTE);                         //Tulostaa sarjaporttiin suoran yhtälön tuloksen, eli helpommin ymmärrettävät celsius lukemat
+  Serial.println(" astetta");                 //Sarjaporttiin tulostus rivinvaihdolla
+  ASETUS = analogRead(POTENTIO);                //Lukee potentiometrin AD arvon
+  ASETUS = map(ASETUS, 0, 1023, 16000, 30000);    //Muuntaa potentiometrin äärilukemat 0 ja 1023, 16000 ja 30000 arvoisiksi (0 = 16000 ja 1023 = 30000). Näin tehtiin koska haluttiin potentiometrin säädölle enemmän "askellusta", jolloin säätämisen tarkkuus parani. Tässä haetaan 16 asteen minimiarvoa ja 30 asteen maksimiarvoa.
   Serial.print("Raja-arvo: ");
-  Serial.print(ASETUS/1000.0);               //ASETUS arvo jaetaan sadalla koska se aiemmin mäpättiin sata kertaiseksi lisätarkkuuden saavuttamiseksi. Lisättäessä piste luvun perään, saadaan sarjaporttiin desimaalilukuja.
+  Serial.print(ASETUS/1000.0);               //ASETUS arvo jaetaan sadalla koska se aiemmin mäpättiin tuhat kertaiseksi lisätarkkuuden saavuttamiseksi. Lisättäessä piste ja nolla luvun perään, saadaan sarjaporttiin desimaalilukuja.
   Serial.println(" astetta");
-  delay(1000);                                    //Viive jottei sarjaporttiin tulostuisi niin usein
-  ASTE*=1000;                                      //Kertoo luetun lämpötilan 100 kertaisesti, koska haluttiin säätöön enemmän tarkkuutta.
-  OHJAUS = map(ASTE - ASETUS, 1000, 7000, 60, 255); //Jos mitatun arvon ja asetetun arvon erotus on vaikka 1 (tässä yhteydessä 100, koska luvut kerrottiin), mäppäytyy OHJAUS:ksen analogWrite arvo silloin 60, jolloin puhallin pyörii hiljaisimmalla mahdollisella nopeudella. 255 on suurin nopeus.
-  Serial.println(OHJAUS);                         //Tulostaa arvon helpottaaksi kehitystyötä
-  if(OHJAUS<0){                                   //Jos ohjauksen arvo on enemmän kuin 0,
-    analogWrite(FAN, 0);                     //käynnistetään puhallin "OHJAUS" arvon mukaisella nopeudella
-  }else if(OHJAUS > 255){
-    analogWrite(FAN, 255);
+}
+
+void ohjaus(){
+  ASTE*=1000;                                      //Kertoo luetun lämpötilan 1000 kertaisesti, koska haluttiin säätöön enemmän tarkkuutta.
+  OHJAUS = map(ASTE - ASETUS, 1000, 7000, 60, 255); //Jos mitatun arvon ja asetetun arvon erotus on esim 1000 (Alunperin 1 aste), mäppäytyy OHJAUS:ksen analogWrite arvoksi 60, jolloin puhallin alkaa pyöriä hiljaisimmalla mahdollisella nopeudella. 255 on vastaavasti suurin nopeus.
+  #ifdef debug                                  //Jos debug on käytössä define:issa, ohjelma ei jätä #ifdef - #endif välistä riviä väliin
+  Serial.println(OHJAUS);                       //Tulostaa arvon helpottaaksi ohjaelman kehittämistä
+  #endif debug 
+  if(OHJAUS<0){                                   //Jos OHJAUS arvo on vähemmän kuin 0,
+    analogWrite(FAN, 0);                        //puhallin pidetään poissa päältä
+  }else if(OHJAUS > 255){                       //Jos OHJAUS arvo on enemmän kuin 255,
+    analogWrite(FAN, 255);                      //pyörii puhallin maksiminopeutta. Tämä lisättiin siksi että jos AD arvo nousi aiemmin yli 255, hidastui puhaltimen pyöriminen, koska arvo palasi takaisin 0:n. Nyt tämä lisää 255 + OHJAUS arvo.
   }else{
-    analogWrite(FAN, OHJAUS);
+    analogWrite(FAN, OHJAUS);                   //Muutoin puhallin pyörii OHJAUS arvon mukaisella nopeudella
   }
-  if(ASTE > ASETUS){                //Jos mitattu arvo on enemmän kuin asetettu arvo,
+}
+
+void valot(){
+ if(ASTE > ASETUS){                //Jos mitattu arvo on enemmän kuin asetettu arvo,
     digitalWrite(LEDVIH, LEDOFF);   //vihreä ledi sammutetaan,
-    digitalWrite(LEDSIN, LEDON);    //ja sininen ledi sytytetään.
+    digitalWrite(LEDSIN, LEDON);    //ja sininen ledi sytytetään
   }else if(ASTE < ASETUS){          //Jos mitattu arvo on vähemmän kuin asetettu,
     digitalWrite(LEDSIN, LEDOFF);   //sammutetaan sininen ledi
     digitalWrite(LEDVIH, LEDON);    //Vihreä ledi palaa aina kun lämpötila on halutun arvoinen; silloin kun on jäähdytetty tarpeeksi matalalle
   }
+}
+  
+void loop() {
+  keskiarvo();             //Funktiokutsut eri toiminnoille
+  mittaus();
+  delay(1000);             //Viive jottei sarjaporttiin tulostuisi niin usein
+  ohjaus();
+  valot();
+ 
  }

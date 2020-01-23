@@ -47,6 +47,7 @@ void keskiarvo(){                             //Keskiarvoistukselle oma funtio.
 
 void mittaus(){
   ASTE = (-5.30/34.00)*LUKEMA+105.9;          //Lukemien muuntamisessa on käytetty suoran yhtälöä.
+  //ASTE = map(LUKEMA, 510.0, 544.0, 26.4 , 21.1);  //Lukemat voidaan muuntaa myös näin mäppäämällä.
   Serial.print("Mitattu lämpötila: ");        //Sarjaporttiin tulostus.
   Serial.print(ASTE);                         //Tulostaa sarjaporttiin suoran yhtälön tuloksen, eli loogisemmat celsius aste lukemat.
   Serial.println(" astetta");                 //Sarjaporttiin tulostus rivinvaihdolla.
@@ -54,10 +55,10 @@ void mittaus(){
 }
 
 void asetettu(){
-  ASETUS = analogRead(POTENTIO);                //Lukee potentiometrin AD arvon.
+  ASETUS = analogRead(POTENTIO);                  //Lukee potentiometrin AD arvon.
   ASETUS = map(ASETUS, 0, 1023, 16000, 30000);    //Muuntaa potentiometrin äärilukemat 0 ja 1023, 16000 ja 30000 arvoisiksi (0 = 16000 ja 1023 = 30000). Näin tehtiin koska haluttiin potentiometrin säädölle enemmän "askellusta", jolloin säätämisen tarkkuus parani. Tässä haetaan 16 asteen minimiarvoa ja 30 asteen maksimiarvoa.
   Serial.print("Raja-arvo: ");
-  Serial.print(ASETUS/1000.0);               //ASETUS arvo jaetaan tuhannella joka aiemmin mäpättiin tuhatkertaiseksi lisätarkkuuden saavuttamiseksi. Lisättäessä piste ja nolla luvun perään, saadaan sarjaporttiin desimaalilukuja.
+  Serial.print(ASETUS/1000.0);                    //ASETUS arvo jaetaan tuhannella joka aiemmin mäpättiin tuhatkertaiseksi lisätarkkuuden saavuttamiseksi. Lisättäessä piste ja nolla luvun perään, saadaan sarjaporttiin desimaalilukuja.
   Serial.println(" astetta");
 }
 
@@ -65,14 +66,14 @@ void ohjaus(){
   ASTE*=1000;                                         //Kertoo luetun lämpötilan 1000 kertaisesti, koska haluttiin säätöön enemmän tarkkuutta.
   OHJAUS = map(ASTE - ASETUS, 1000, 7000, 60, 255);   //Jos mitatun arvon ja asetetun arvon erotus on esim 1000 (Alunperin 1 aste), mäppäytyy OHJAUS:ksen analogWrite arvoksi 60, jolloin puhallin alkaa pyöriä hiljaisimmalla mahdollisella nopeudella. 255 on vastaavasti suurin nopeus.
   #ifdef debug                                        //Jos debug on käytössä define:issa, ohjelma ei jätä #ifdef - #endif välistä riviä väliin.
-  Serial.println(OHJAUS);                //Tulostaa ASTE - ASETUS erotuksen helpottaaksi ohjelman kehittämistä.
+  Serial.println(OHJAUS);                           //Tulostaa ASTE - ASETUS erotuksen helpottaaksi ohjelman kehittämistä.
   #endif debug 
-  if(OHJAUS<0){                          //Jos OHJAUS arvo on vähemmän kuin 0,
-    analogWrite(FAN, 0);                 //puhallin pidetään poissa päältä.
-  }else if(OHJAUS > 255){                //Jos OHJAUS arvo on enemmän kuin 255,
-    analogWrite(FAN, 255);               //pyörii puhallin maksiminopeutta. Tämä lisättiin siksi että jos AD arvo nousi aiemmin yli 255, hidastui puhaltimen pyöriminen, koska arvo palasi takaisin 0:n. Nyt tämä lisää 255 + OHJAUS arvo.
+  if(OHJAUS<0){                                     //Jos OHJAUS arvo on vähemmän kuin 0,
+    analogWrite(FAN, 0);                            //puhallin pidetään poissa päältä.
+  }else if(OHJAUS > 255){                           //Jos OHJAUS arvo on enemmän kuin 255,
+    analogWrite(FAN, 255);                          //pyörii puhallin maksiminopeutta. Tämä lisättiin siksi että jos AD arvo nousi aiemmin yli 255, hidastui puhaltimen pyöriminen, koska arvo palasi takaisin 0:n. Nyt tämä lisää 255 + OHJAUS arvo.
   }else{
-    analogWrite(FAN, OHJAUS);            //Muutoin puhallin pyörii OHJAUS arvon mukaisella nopeudella.
+    analogWrite(FAN, OHJAUS);                       //Muutoin puhallin pyörii OHJAUS arvon mukaisella nopeudella.
   }
 }
 

@@ -1,0 +1,11 @@
+﻿Part     Value   Device             Package     Description                                                                                       
+1K-POT           TRIM_EU-CIP20C-6MM CIP20C-6MM  POTENTIOMETER                                                                                     
+ANTURI           MTA03-100          10X03MTA    AMP connector     - 		(KY-013 anturi tämän paikalla)                                                                                 
+IC1              ARDUINO2009_10     ARDUINO2009 The Arduino Duemilanove ("2009") is a microcontroller board based on the ATmega168  or ATmega328. 
+LED1VIH          LED5MM             LED5MM      LED                                                                                               
+LED2SIN          LED5MM             LED5MM      LED                                                                                               
+Q1       IRF530  IRF530             TO220BV     HEXFET Power MOSFET                                                                               
+R1       220 ohm R-EU_0207/7        0207/7      RESISTOR, European symbol                                                                         
+R3       220 ohm R-EU_0207/7        0207/7      RESISTOR, European symbol                                                                         
+R4       220 ohm R-EU_0207/7        0207/7      RESISTOR, European symbol                                                                         
+TUULETIN         MTA02-100          10X02MTA    AMP connector          -	(12V Tietokonekotelon tuuletin)                                                                         

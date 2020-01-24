@@ -9,7 +9,7 @@
 #define LEDON HIGH
 #define LEDOFF LOW
 
-#define debug     //Kommenttina siksi että voi tarpeen mukaan hyödyntää. Jos käytössä, ei hyppää halutun rivin yli koodissa.
+//#define debug     //Kommenttina siksi että voi tarpeen mukaan hyödyntää. Jos ei käytössä, hyppää halutun rivin yli koodissa.
 
 //Globaalit muuttujat, jokainen funktio pystyy hyödyntämään niitä.
 int LUKEMA;
@@ -29,16 +29,16 @@ void setup(){
   analogWrite(FAN, 0);                //Varmistetaan että tuuletin on "nolla" tilassa käynnistettäessä, eli ei lähde pyörimään.
   Serial.begin(9600);
   for(int i = 0; i<5; i++){           //for silmukassa "i" muuttujaan tallennetaan i:n arvoksi 0, ja niin kauan kunnes i:n arvo on 5, lisätään lukemaan joka kierron jälkeen +1.
-   TAULU[i] =  analogRead(ANTURI);    //Lukee anturin arvon ja tallentaa TAULU muuttujaan. Tämä tehdään void setup:in siksi ettei puhallin lähde heti alkuun pyörimään.
+   TAULU[i] =  analogRead(ANTURI);    //Lukee anturin arvon ja tallentaa TAULU muuttujaan. Tämä tehdään void setup:iin siksi ettei puhallin lähde heti alkuun pyörimään.
   }
 }
 
 void keskiarvo(){                             //Keskiarvoistukselle oma funtio.
    TAULU[INDEX++] = analogRead(ANTURI);       //Luetaan anturin arvo. INDEX pitää kirjaa mittauksien lukumäärästä.
-  if(INDEX == 5){                             //Jos luettuja arvoja on 5,
+  if(INDEX == 5){                             //Jos INDEX:iin on luettu 5 arvoa,
     INDEX = 0;                                //palataan laskuissa takaisin 0:aan.
   }
-  int SUMMA = 0;                          //Alustaa SUMMA:n lähtöarvoksi 0.
+  int SUMMA = 0;                          //Luo muuttujan tätä funktiota varten (sitä ei tarvita muualla ohjelmassa), ja alustaa sen arvoksi 0.
   for(int i = 0; i<5; i++){               //Niin kauan kunnes on luettu 5 näytettä,
     SUMMA = SUMMA+TAULU[i];               //tallentuu aiemmin luettu arvo SUMMA yhteenlaskuun.
   }
@@ -46,11 +46,11 @@ void keskiarvo(){                             //Keskiarvoistukselle oma funtio.
 }
 
 void mittaus(){
-  ASTE = (-5.30/34.00)*LUKEMA+105.9;          //Lukemien muuntamisessa on käytetty suoran yhtälöä.
+  ASTE = (-5.30/34.00)*LUKEMA+105.9;                //Lukemien muuntamisessa on käytetty suoran yhtälöä.
   //ASTE = map(LUKEMA, 510.0, 544.0, 26.4 , 21.1);  //Lukemat voidaan muuntaa myös näin mäppäämällä.
-  Serial.print("Mitattu lämpötila: ");        //Sarjaporttiin tulostus.
-  Serial.print(ASTE);                         //Tulostaa sarjaporttiin suoran yhtälön tuloksen, eli loogisemmat celsius aste lukemat.
-  Serial.println(" astetta");                 //Sarjaporttiin tulostus rivinvaihdolla.
+  Serial.print("Mitattu lämpötila: ");              //Sarjaporttiin tulostus.
+  Serial.print(ASTE);                               //Tulostaa sarjaporttiin suoran yhtälön tuloksen, eli loogisemmat celsius aste lukemat.
+  Serial.println(" astetta");                       //Sarjaporttiin tulostus rivinvaihdolla.
   
 }
 
@@ -65,8 +65,8 @@ void asetettu(){
 void ohjaus(){
   ASTE*=1000;                                         //Kertoo luetun lämpötilan 1000 kertaisesti, koska haluttiin säätöön enemmän tarkkuutta.
   OHJAUS = map(ASTE - ASETUS, 1000, 7000, 60, 255);   //Jos mitatun arvon ja asetetun arvon erotus on esim 1000 (Alunperin 1 aste), mäppäytyy OHJAUS:ksen analogWrite arvoksi 60, jolloin puhallin alkaa pyöriä hiljaisimmalla mahdollisella nopeudella. 255 on vastaavasti suurin nopeus.
-  #ifdef debug                                        //Jos debug on käytössä define:issa, ohjelma ei jätä #ifdef - #endif välistä riviä väliin.
-  Serial.println(OHJAUS);                           //Tulostaa ASTE - ASETUS erotuksen helpottaaksi ohjelman kehittämistä.
+  #ifdef debug                                        //Jos debug ei ole käytössä define:issa, ohjelma jättää #ifdef - #endif välisen rivin väliin.
+  Serial.println(OHJAUS);                           //Tulostaa ASTE - ASETUS erotuksen; käytetty ohjelman kehittämistä helpottaaksi.
   #endif debug 
   if(OHJAUS<0){                                     //Jos OHJAUS arvo on vähemmän kuin 0,
     analogWrite(FAN, 0);                            //puhallin pidetään poissa päältä.
@@ -91,7 +91,7 @@ void loop() {
   keskiarvo();             //Funktiokutsut eri toiminnoille.
   mittaus();
   asetettu();
-  delay(1000);             //Viive jottei sarjaporttiin tulostuisi niin usein.
+  delay(500);             //Viive jottei sarjaporttiin tulostuisi niin usein.
   ohjaus();
   valot();
  

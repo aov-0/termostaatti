@@ -9,7 +9,7 @@
 #define LEDON HIGH
 #define LEDOFF LOW
 
-//#define debug     //Kommenttina siksi että voi tarpeen mukaan hyödyntää. Jos ei käytössä, hyppää halutun rivin yli koodissa.
+//#define debug    //Kommenttina siksi että voi tarpeen mukaan hyödyntää. Jos ei käytössä, hyppää halutun rivin yli koodissa.
 
 //Globaalit muuttujat, jokainen funktio pystyy hyödyntämään niitä.
 int LUKEMA;
@@ -51,7 +51,6 @@ void mittaus(){
   Serial.print("Mitattu lämpötila: ");              //Sarjaporttiin tulostus.
   Serial.print(ASTE);                               //Tulostaa sarjaporttiin suoran yhtälön tuloksen, eli loogisemmat celsius aste lukemat.
   Serial.println(" astetta");                       //Sarjaporttiin tulostus rivinvaihdolla.
-  
 }
 
 void asetettu(){
@@ -68,7 +67,7 @@ void ohjaus(){
   #ifdef debug                                        //Jos debug ei ole käytössä define:issa, ohjelma jättää #ifdef - #endif välisen rivin väliin.
   Serial.println(OHJAUS);                           //Tulostaa ASTE - ASETUS erotuksen; käytetty ohjelman kehittämistä helpottaaksi.
   #endif debug 
-  if(OHJAUS<0){                                     //Jos OHJAUS arvo on vähemmän kuin 0,
+  if(OHJAUS<0){                                     //Jos OHJAUS arvo on alle 0,
     analogWrite(FAN, 0);                            //puhallin pidetään poissa päältä.
   }else if(OHJAUS > 255){                           //Jos OHJAUS arvo on enemmän kuin 255,
     analogWrite(FAN, 255);                          //pyörii puhallin maksiminopeutta. Tämä lisättiin siksi että jos AD arvo nousi aiemmin yli 255, hidastui puhaltimen pyöriminen, koska arvo palasi takaisin 0:n. Nyt tämä lisää 255 + OHJAUS arvo.
@@ -86,7 +85,7 @@ void valot(){
     digitalWrite(LEDVIH, LEDON);    //Vihreä ledi palaa aina kun lämpötila on halutun arvoinen; silloin kun on jäähdytetty tarpeeksi matalalle
   }
 }
-  
+
 void loop() {
   keskiarvo();             //Funktiokutsut eri toiminnoille.
   mittaus();
@@ -94,5 +93,4 @@ void loop() {
   delay(500);             //Viive jottei sarjaporttiin tulostuisi niin usein.
   ohjaus();
   valot();
- 
- }
+}

@@ -9,7 +9,7 @@
 #define LEDON HIGH
 #define LEDOFF LOW
 
-#define debug    //Kommenttina siksi että voi tarpeen mukaan hyödyntää. Jos ei käytössä, hyppää halutun rivin yli koodissa.
+//#define debug    //Kommenttina siksi että voi tarpeen mukaan hyödyntää. Jos ei käytössä, hyppää halutun rivin yli koodissa.
 
 //Globaalit muuttujat, jokainen funktio pystyy hyödyntämään niitä.
 int LUKEMA;
@@ -19,7 +19,7 @@ int TAULU[5];     //Muuttuja keskiarvoistamista varten. Varaa 5 tallennuspaikkaa
 int INDEX = 0;    //Alustetaan arvoltaan 0:ksi.
 float ASTE;       //float on vastaava kuin int, mutta silloin voidaan käyttää desimaalilukuja. Lämpötilaa varten se on kätevä, koska halutaan mahdollisimman tarkkoja lukemia.
 
-//Setupissa tehdään esiasetukset ennen kuin varsinainen ohjelma alkaa.
+//Setupissa tehdään esiasetukset ennen kuin varsinainen ohjelma alkaa. 
 void setup(){
   pinMode(LEDSIN, OUTPUT);
   pinMode(LEDVIH, OUTPUT);

@@ -38,7 +38,7 @@ void keskiarvo(){                             //Keskiarvoistukselle oma funtio.
   if(INDEX == 5){                             //Jos INDEX:iin on luettu 5 arvoa,
     INDEX = 0;                                //palataan laskuissa takaisin 0:aan.
   }
-  int SUMMA = 0;                          //Luo muuttujan tätä funktiota varten (sitä ei tarvita muualla ohjelmassa), ja alustaa sen arvoksi 0.
+  int SUMMA = 0;                          //Luo muuttujan tätä funktiota varten (sitä ei tarvita tai käytetä muualla ohjelmassa), ja alustaa sen arvoksi 0.
   for(int i = 0; i<5; i++){               //Niin kauan kunnes on luettu 5 näytettä,
     SUMMA = SUMMA+TAULU[i];               //tallentuu aiemmin luettu arvo SUMMA yhteenlaskuun.
   }
@@ -67,24 +67,23 @@ void ohjaus(){
   #ifdef debug                                        //Jos debug ei ole käytössä define:issa, ohjelma jättää #ifdef - #endif välisen rivin väliin.
   Serial.println(OHJAUS);                           //Tulostaa ASTE - ASETUS erotuksen; käytetty ohjelman kehittämistä helpottaaksi.
   #endif debug 
-  if(OHJAUS<60){                                     //Jos OHJAUS arvo on alle 0,
+  if(OHJAUS<40){                                     //Jos OHJAUS arvo on alle 40,
     analogWrite(FAN, 0);                            //puhallin pidetään poissa päältä.
+    digitalWrite(LEDVIH, LEDON);                    //Vihreä ledi palaa kun puhallin ei pyöri.
+    digitalWrite(LEDSIN, LEDOFF);                   //Sininen ledi sammutetaan aina kun puhaltimen toiminta pysähtyy
   }else if(OHJAUS > 255){                           //Jos OHJAUS arvo on enemmän kuin 255,
     analogWrite(FAN, 255);                          //pyörii puhallin maksiminopeutta. Tämä lisättiin siksi että jos AD arvo nousi aiemmin yli 255, hidastui puhaltimen pyöriminen, koska arvo palasi takaisin 0:n. Nyt tämä laskee arvon 255 + OHJAUS arvo.
-  }else{
+    digitalWrite(LEDSIN, LEDON);                    //Jäähdyttäessä sininen ledi syttyy,
+    digitalWrite(LEDVIH, LEDOFF);                   //ja vihreä ledi sammuu.
+  }else if(OHJAUS > 60){                            //OHJAUS arvon pitää nousta yli 60 ennen kuin puhallin alkaa pyöriä.
     analogWrite(FAN, OHJAUS);                       //Muutoin puhallin pyörii OHJAUS arvon mukaisella nopeudella.
-  }
+    digitalWrite(LEDSIN, LEDON);                    //Jäähdyttäessä sininen ledi syttyy,
+    digitalWrite(LEDVIH, LEDOFF);                   //ja vihreä ledi sammuu.
+    
+  }                                                 
 }
 
-void valot(){
- if(ASTE > ASETUS){                //Jos mitattu arvo on enemmän kuin asetettu lämpötila,
-    digitalWrite(LEDVIH, LEDOFF);   //vihreä ledi sammutetaan,
-    digitalWrite(LEDSIN, LEDON);    //ja sininen ledi sytytetään.
-  }else if(ASTE < ASETUS){          //Muutoin jos mitattu arvo on vähemmän kuin asetettu,
-    digitalWrite(LEDSIN, LEDOFF);   //sammutetaan sininen ledi.
-    digitalWrite(LEDVIH, LEDON);    //Vihreä ledi palaa silloin kun lämpötila on halutulla tasolla, tai sen alapuolella.
-  }
-}
+//Kun OHJAUS arvo on noussut yli 60:n (lämpötila ero noin 1 celsius aste), puhallin alkaa pyöriä, mutta vasta kun OHJAUS arvo on laskenut alle 40:n puhallin pysähtyy (noin 0,5 celsius astetta). Näin estetään ettei puhallin lähde jatkuvasti päälle ja pois päältä.
 
 void loop() {
   keskiarvo();             //Funktiokutsut eri toiminnoille.
@@ -92,5 +91,4 @@ void loop() {
   asetettu();
   delay(500);             //Viive jottei sarjaporttiin tulostuisi niin usein.
   ohjaus();
-  valot();
 }
